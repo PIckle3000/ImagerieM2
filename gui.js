@@ -1,24 +1,28 @@
-var OBJ1 = null;
-
 const bunnyCheckbox = document.getElementById('bunny-checkbox');
 const planCheckbox = document.getElementById('plan-checkbox');
 const trianglesCheckbox = document.getElementById('triangles-checkbox');
 
 function aff_checkbox(){
-if (bunnyCheckbox) {
-	bunnyCheckbox.addEventListener('change', function() {
-	OBJ1 = new objmesh('bunny.obj');
-	});
-}
+	
+	if (bunnyCheckbox) bunnyCheckbox.checked = showBunny;
+	if (planCheckbox) planCheckbox.checked = showPlan;
+	if (trianglesCheckbox) trianglesCheckbox.checked = showTriangles;
 
-if (planCheckbox) {
-	planCheckbox.addEventListener('change', function() {
-		
-	});
-}
+	if (bunnyCheckbox) {
+		bunnyCheckbox.addEventListener('change', function() {
+			showBunny = this.checked;
+		});
+	}
 
-if (trianglesCheckbox) {
-	trianglesCheckbox.addEventListener('change', function() {
-		
-	});
-}}
+	if (planCheckbox) {
+		planCheckbox.addEventListener('change', function() {
+			showPlan = this.checked;
+		});
+	}
+
+	if (trianglesCheckbox) {
+		trianglesCheckbox.addEventListener('change', function() {
+			showTriangles = this.checked;
+		});
+	}
+}

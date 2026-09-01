@@ -12,6 +12,11 @@ var distCENTER;
 var OBJ1 = null;
 var PLANE = null;
 
+
+var showBunny = false;
+var showPlan = false;
+var showTriangles = false;
+
 // =====================================================
 // OBJET 3D, lecture fichier obj
 // =====================================================
@@ -282,20 +287,26 @@ function webGLStart() {
 
 	distCENTER = vec3.create([0,-0.2,-3]);
 	
-	PLANE = new plane();
-
-	OBJ1 = new objmesh();
-	//OBJ2 = new objmesh('porsche.obj');
 	
+	aff_checkbox();
+	PLANE = new plane();
+	OBJ1= new objmesh('bunny.obj');
 	tick();
 }
 
 // =====================================================
 function drawScene() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	PLANE.draw();
-
-	OBJ1.draw();
+	
+	if (showBunny){
+		OBJ1.draw();
+	}
+	if (showPlan){
+		PLANE.draw();
+	}
+	
+	
+	
 	//OBJ2.draw();
 }
 
