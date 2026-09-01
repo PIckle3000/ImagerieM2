@@ -124,7 +124,7 @@ class plane {
 		this.texture = null;
 
 		const image1 = new Image();
-		image1.src = "img/echo2.png";
+		image1.src = "img/echo1.png";
 
 		image1.onload = () => {
 			this.texture = gl.createTexture();
@@ -179,9 +179,10 @@ class plane {
 	draw() {
 		if(this.shader && this.loaded==4 && this.texture) { 
 			this.setShadersParams();
-			
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, this.vBuffer.numItems);
-			gl.drawArrays(gl.LINE_LOOP, 0, this.vBuffer.numItems);
+			if (showTriangles) {
+				gl.drawArrays(gl.LINE_LOOP, 0, this.vBuffer.numItems);
+			}
 		}
 	}
 
@@ -313,8 +314,7 @@ function webGLStart() {
 
 	distCENTER = vec3.create([0,-0.2,-3]);
 	
-	
-	aff_checkbox();
+	initGui();
 	PLANE = new plane();
 
 	OBJ1 = new objmesh('bunny.obj');
@@ -325,10 +325,16 @@ function webGLStart() {
 
 // =====================================================
 function drawScene() {
-	gl.clear(gl.COLOR_BUFFER_BIT);
-	PLANE.draw();
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	OBJ1.draw();
+	if (showPlan && PLANE) {
+		PLANE.draw();
+	}
+
+	if (showBunny && OBJ1) {
+		OBJ1.draw();
+	}
+
 	//OBJ2.draw();
 }
 

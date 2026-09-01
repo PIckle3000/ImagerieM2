@@ -1,9 +1,12 @@
-const bunnyCheckbox = document.getElementById('bunny-checkbox');
-const planCheckbox = document.getElementById('plan-checkbox');
-const trianglesCheckbox = document.getElementById('triangles-checkbox');
+function initGui() {
+	if (window.__guiInitialized) {
+		return;
+	}
 
-function aff_checkbox(){
-	
+	const bunnyCheckbox = document.getElementById('bunny-checkbox');
+	const planCheckbox = document.getElementById('plan-checkbox');
+	const trianglesCheckbox = document.getElementById('triangles-checkbox');
+
 	if (bunnyCheckbox) bunnyCheckbox.checked = showBunny;
 	if (planCheckbox) planCheckbox.checked = showPlan;
 	if (trianglesCheckbox) trianglesCheckbox.checked = showTriangles;
@@ -25,4 +28,10 @@ function aff_checkbox(){
 			showTriangles = this.checked;
 		});
 	}
+
+	window.__guiInitialized = true;
+}
+
+function aff_checkbox() {
+	initGui();
 }
