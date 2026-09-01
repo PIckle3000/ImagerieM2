@@ -284,7 +284,7 @@ function webGLStart() {
 	
 	PLANE = new plane();
 
-	OBJ1 = new objmesh('bunny.obj');
+	OBJ1 = new objmesh();
 	//OBJ2 = new objmesh('porsche.obj');
 	
 	tick();
