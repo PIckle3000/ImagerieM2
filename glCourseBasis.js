@@ -108,6 +108,8 @@ class plane {
 			1.0,0.0
 		];
 
+
+
 		this.vBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -119,6 +121,23 @@ class plane {
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STATIC_DRAW);
 		this.tBuffer.itemSize = 2;
 		this.tBuffer.numItems = 4;
+		this.texture = null;
+
+		const image1 = new Image();
+		image1.src = "img/echo2.png";
+
+		image1.onload = () => {
+			this.texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, this.texture);
+			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image1);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+		};
+		
 
 		loadShaders(this);
 	}
@@ -140,6 +159,7 @@ class plane {
 
 		this.shader.pMatrixUniform = gl.getUniformLocation(this.shader, "uPMatrix");
 		this.shader.mvMatrixUniform = gl.getUniformLocation(this.shader, "uMVMatrix");
+		this.shader.samplerUniform = gl.getUniformLocation(this.shader, "uSampler");
 
 		mat4.identity(mvMatrix);
 		mat4.translate(mvMatrix, distCENTER);
@@ -147,11 +167,17 @@ class plane {
 
 		gl.uniformMatrix4fv(this.shader.pMatrixUniform, false, pMatrix);
 		gl.uniformMatrix4fv(this.shader.mvMatrixUniform, false, mvMatrix);
+
+		if (this.texture) {
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, this.texture);
+			gl.uniform1i(this.shader.samplerUniform, 0);
+		}
 	}
 
 	// --------------------------------------------
 	draw() {
-		if(this.shader && this.loaded==4) {		
+		if(this.shader && this.loaded==4 && this.texture) { 
 			this.setShadersParams();
 			
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, this.vBuffer.numItems);
@@ -290,23 +316,19 @@ function webGLStart() {
 	
 	aff_checkbox();
 	PLANE = new plane();
-	OBJ1= new objmesh('bunny.obj');
+
+	OBJ1 = new objmesh('bunny.obj');
+	//OBJ2 = new objmesh('porsche.obj');
+	
 	tick();
 }
 
 // =====================================================
 function drawScene() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	
-	if (showBunny){
-		OBJ1.draw();
-	}
-	if (showPlan){
-		PLANE.draw();
-	}
-	
-	
-	
+	PLANE.draw();
+
+	OBJ1.draw();
 	//OBJ2.draw();
 }
 
