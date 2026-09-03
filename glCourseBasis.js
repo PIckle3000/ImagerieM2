@@ -14,7 +14,8 @@ var showPlan = true;
 var showGrid = true;
 var grid3DEcho = true;
 var gridSmooth = false;
-var gridResolution = 40;
+var gridStrongSmooth = false;
+var gridResolution = 80;
 var textureChoice = 'echo4.png';
 
 // =====================================================
@@ -177,6 +178,7 @@ class plane {
         this.showMesh = !!showGrid;
         this.echo3DMode = !!grid3DEcho;
         this.useSmoothing = !!gridSmooth;
+        this.useStrongSmoothing = !!gridStrongSmooth;
         
         // --- Nouveaux paramètres adaptables ---
         this.resolution = gridResolution || 40;
@@ -205,6 +207,11 @@ class plane {
     setSmoothMode(enabled) {
         this.useSmoothing = !!enabled;
         gridSmooth = this.useSmoothing;
+    }
+
+    setStrongSmoothMode(enabled) {
+        this.useStrongSmoothing = !!enabled;
+        gridStrongSmooth = this.useStrongSmoothing;
     }
 
     setReliefMode(enabled) {
@@ -244,8 +251,8 @@ class plane {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
@@ -331,6 +338,7 @@ class plane {
         this.shader.reliefUniform = gl.getUniformLocation(this.shader, "uUseRelief");
         this.shader.echo3DUniform = gl.getUniformLocation(this.shader, "uEcho3DMode");
         this.shader.smoothUniform = gl.getUniformLocation(this.shader, "uUseSmooth");
+        this.shader.strongSmoothUniform = gl.getUniformLocation(this.shader, "uUseStrongSmooth");
         this.shader.textureSizeUniform = gl.getUniformLocation(this.shader, "uTextureSize");
 
         if (this.shader.heightScaleUniform !== null) {
@@ -344,6 +352,9 @@ class plane {
         }
         if (this.shader.smoothUniform !== null) {
             gl.uniform1f(this.shader.smoothUniform, this.useSmoothing ? 1.0 : 0.0);
+        }
+        if (this.shader.strongSmoothUniform !== null) {
+            gl.uniform1f(this.shader.strongSmoothUniform, this.useStrongSmoothing ? 1.0 : 0.0);
         }
         if (this.shader.textureSizeUniform !== null) {
             gl.uniform2f(this.shader.textureSizeUniform, this.textureWidth || 1, this.textureHeight || 1);

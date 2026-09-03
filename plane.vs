@@ -10,6 +10,7 @@ uniform float uHeightScale;
 uniform float uUseRelief;
 uniform float uEcho3DMode;
 uniform float uUseSmooth;
+uniform float uUseStrongSmooth;
 uniform vec2 uTextureSize;
 
 
@@ -60,10 +61,28 @@ vec4 sampleStrongSmooth(vec2 uv) {
     return center + left + right + up + down;
 }
 
+vec4 sampleVeryStrongSmooth(vec2 uv) {
+    vec2 texSize = max(uTextureSize, vec2(1.0));
+    vec2 texel = 1.0 / texSize;
+
+    vec4 color = sampleStrongSmooth(uv) * 0.25;
+    color += sampleStrongSmooth(uv + vec2(texel.x * 2.0, 0.0)) * 0.125;
+    color += sampleStrongSmooth(uv + vec2(-texel.x * 2.0, 0.0)) * 0.125;
+    color += sampleStrongSmooth(uv + vec2(0.0, texel.y * 2.0)) * 0.125;
+    color += sampleStrongSmooth(uv + vec2(0.0, -texel.y * 2.0)) * 0.125;
+    color += sampleStrongSmooth(uv + vec2(texel.x * 2.0, texel.y * 2.0)) * 0.0625;
+    color += sampleStrongSmooth(uv + vec2(-texel.x * 2.0, texel.y * 2.0)) * 0.0625;
+    color += sampleStrongSmooth(uv + vec2(texel.x * 2.0, -texel.y * 2.0)) * 0.0625;
+    color += sampleStrongSmooth(uv + vec2(-texel.x * 2.0, -texel.y * 2.0)) * 0.0625;
+
+    return color;
+}
+
 void main(void) {
     vTexCoords = aTexCoords;
 
-    vec4 texColor = mix(texture2D(uSampler, aTexCoords), sampleStrongSmooth(aTexCoords), uUseSmooth);
+    vec4 strongColor = mix(sampleStrongSmooth(aTexCoords), sampleVeryStrongSmooth(aTexCoords), uUseStrongSmooth);
+    vec4 texColor = mix(texture2D(uSampler, aTexCoords), strongColor, uUseSmooth);
     float gray = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
 
     float reliefValue = mix(1.0 - gray, gray, uEcho3DMode);

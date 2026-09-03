@@ -83,6 +83,7 @@ function initGui() {
 	const gridCheckbox = document.getElementById('grid-checkbox');
 	const grid3DEchoCheckbox = document.getElementById('grid-3d-echo');
 	const gridSmoothCheckbox = document.getElementById('grid-smooth');
+	const gridStrongSmoothCheckbox = document.getElementById('grid-smooth-strong');
 	const textureSelect = document.getElementById('texture-select');
 	const gridResolutionInput = document.getElementById('grid-resolution');
 	const gridResolutionValue = document.getElementById('grid-resolution-value');
@@ -122,6 +123,16 @@ function initGui() {
 			gridSmooth = this.checked;
 			if (PLANE) {
 				PLANE.setSmoothMode(gridSmooth);
+			}
+		});
+	}
+
+	if (gridStrongSmoothCheckbox) {
+		gridStrongSmoothCheckbox.checked = gridStrongSmooth;
+		gridStrongSmoothCheckbox.addEventListener('change', function() {
+			gridStrongSmooth = this.checked;
+			if (PLANE) {
+				PLANE.setStrongSmoothMode(gridStrongSmooth);
 			}
 		});
 	}
@@ -173,6 +184,7 @@ function initGui() {
 	if (PLANE) {
 		PLANE.setEcho3DMode(grid3DEcho);
 		PLANE.setSmoothMode(gridSmooth);
+		PLANE.setStrongSmoothMode(gridStrongSmooth);
 	}
 
 	if (!window.__textureRefreshTimer) {
