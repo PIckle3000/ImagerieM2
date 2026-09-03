@@ -11,8 +11,9 @@ var distCENTER;
 var PLANE = null;
 
 var showPlan = true;
-var showGrid = false;
+var showGrid = true;
 var grid3DEcho = true;
+var gridSmooth = false;
 var gridResolution = 40;
 var textureChoice = 'echo4.png';
 
@@ -169,10 +170,13 @@ class plane {
         this.loaded = -1;
         this.shader = null;
         this.texture = null;
+        this.textureWidth = 1;
+        this.textureHeight = 1;
         this.textureName = textureChoice || 'echo1.png';
         this.useRelief = !!showGrid;
         this.showMesh = !!showGrid;
         this.echo3DMode = !!grid3DEcho;
+        this.useSmoothing = !!gridSmooth;
         
         // --- Nouveaux paramètres adaptables ---
         this.resolution = gridResolution || 40;
@@ -196,6 +200,11 @@ class plane {
     setEcho3DMode(enabled) {
         this.echo3DMode = !!enabled;
         grid3DEcho = this.echo3DMode;
+    }
+
+    setSmoothMode(enabled) {
+        this.useSmoothing = !!enabled;
+        gridSmooth = this.useSmoothing;
     }
 
     setReliefMode(enabled) {
@@ -227,6 +236,8 @@ class plane {
     }
 
     setImage(image) {
+        this.textureWidth = image.width || 1;
+        this.textureHeight = image.height || 1;
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -319,6 +330,8 @@ class plane {
         this.shader.heightScaleUniform = gl.getUniformLocation(this.shader, "uHeightScale");
         this.shader.reliefUniform = gl.getUniformLocation(this.shader, "uUseRelief");
         this.shader.echo3DUniform = gl.getUniformLocation(this.shader, "uEcho3DMode");
+        this.shader.smoothUniform = gl.getUniformLocation(this.shader, "uUseSmooth");
+        this.shader.textureSizeUniform = gl.getUniformLocation(this.shader, "uTextureSize");
 
         if (this.shader.heightScaleUniform !== null) {
             gl.uniform1f(this.shader.heightScaleUniform, this.heightScale);
@@ -328,6 +341,12 @@ class plane {
         }
         if (this.shader.echo3DUniform !== null) {
             gl.uniform1f(this.shader.echo3DUniform, this.echo3DMode ? 1.0 : 0.0);
+        }
+        if (this.shader.smoothUniform !== null) {
+            gl.uniform1f(this.shader.smoothUniform, this.useSmoothing ? 1.0 : 0.0);
+        }
+        if (this.shader.textureSizeUniform !== null) {
+            gl.uniform2f(this.shader.textureSizeUniform, this.textureWidth || 1, this.textureHeight || 1);
         }
 
         mat4.identity(mvMatrix);
