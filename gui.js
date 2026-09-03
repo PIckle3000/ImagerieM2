@@ -48,7 +48,8 @@ function refreshTextureList() {
 			textureChoice || 'echo1.png',
 			'echo1.png',
 			'echo2.png',
-			'echo3.png'
+			'echo3.png',
+			'echo4.png',
 		])));
 		textureSelect.innerHTML = '';
 
