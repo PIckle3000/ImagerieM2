@@ -83,7 +83,8 @@ function initGui() {
 	const gridCheckbox = document.getElementById('grid-checkbox');
 	const grid3DEchoCheckbox = document.getElementById('grid-3d-echo');
 	const gridSmoothCheckbox = document.getElementById('grid-smooth');
-	const gridStrongSmoothCheckbox = document.getElementById('grid-smooth-strong');
+	const gridSmoothStrengthInput = document.getElementById('grid-smooth-strength');
+	const gridSmoothStrengthValue = document.getElementById('grid-smooth-strength-value');
 	const textureSelect = document.getElementById('texture-select');
 	const gridResolutionInput = document.getElementById('grid-resolution');
 	const gridResolutionValue = document.getElementById('grid-resolution-value');
@@ -127,12 +128,18 @@ function initGui() {
 		});
 	}
 
-	if (gridStrongSmoothCheckbox) {
-		gridStrongSmoothCheckbox.checked = gridStrongSmooth;
-		gridStrongSmoothCheckbox.addEventListener('change', function() {
-			gridStrongSmooth = this.checked;
+	if (gridSmoothStrengthInput) {
+		gridSmoothStrengthInput.value = String(gridSmoothStrength);
+		if (gridSmoothStrengthValue) {
+			gridSmoothStrengthValue.textContent = gridSmoothStrength.toFixed(2);
+		}
+		gridSmoothStrengthInput.addEventListener('input', function() {
+			gridSmoothStrength = parseFloat(this.value) || 0;
+			if (gridSmoothStrengthValue) {
+				gridSmoothStrengthValue.textContent = gridSmoothStrength.toFixed(2);
+			}
 			if (PLANE) {
-				PLANE.setStrongSmoothMode(gridStrongSmooth);
+				PLANE.setSmoothStrength(gridSmoothStrength);
 			}
 		});
 	}
@@ -184,7 +191,7 @@ function initGui() {
 	if (PLANE) {
 		PLANE.setEcho3DMode(grid3DEcho);
 		PLANE.setSmoothMode(gridSmooth);
-		PLANE.setStrongSmoothMode(gridStrongSmooth);
+		PLANE.setSmoothStrength(gridSmoothStrength);
 	}
 
 	if (!window.__textureRefreshTimer) {

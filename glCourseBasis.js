@@ -14,7 +14,7 @@ var showPlan = true;
 var showGrid = true;
 var grid3DEcho = true;
 var gridSmooth = false;
-var gridStrongSmooth = false;
+var gridSmoothStrength = 0;
 var gridResolution = 80;
 var textureChoice = 'echo4.png';
 
@@ -178,7 +178,7 @@ class plane {
         this.showMesh = !!showGrid;
         this.echo3DMode = !!grid3DEcho;
         this.useSmoothing = !!gridSmooth;
-        this.useStrongSmoothing = !!gridStrongSmooth;
+        this.smoothStrength = gridSmoothStrength || 0;
         
         // --- Nouveaux paramètres adaptables ---
         this.resolution = gridResolution || 40;
@@ -209,9 +209,9 @@ class plane {
         gridSmooth = this.useSmoothing;
     }
 
-    setStrongSmoothMode(enabled) {
-        this.useStrongSmoothing = !!enabled;
-        gridStrongSmooth = this.useStrongSmoothing;
+    setSmoothStrength(value) {
+        this.smoothStrength = Math.max(0.0, Math.min(1.0, parseFloat(value) || 0.0));
+        gridSmoothStrength = this.smoothStrength;
     }
 
     setReliefMode(enabled) {
@@ -338,7 +338,7 @@ class plane {
         this.shader.reliefUniform = gl.getUniformLocation(this.shader, "uUseRelief");
         this.shader.echo3DUniform = gl.getUniformLocation(this.shader, "uEcho3DMode");
         this.shader.smoothUniform = gl.getUniformLocation(this.shader, "uUseSmooth");
-        this.shader.strongSmoothUniform = gl.getUniformLocation(this.shader, "uUseStrongSmooth");
+        this.shader.smoothStrengthUniform = gl.getUniformLocation(this.shader, "uSmoothStrength");
         this.shader.textureSizeUniform = gl.getUniformLocation(this.shader, "uTextureSize");
 
         if (this.shader.heightScaleUniform !== null) {
@@ -353,8 +353,8 @@ class plane {
         if (this.shader.smoothUniform !== null) {
             gl.uniform1f(this.shader.smoothUniform, this.useSmoothing ? 1.0 : 0.0);
         }
-        if (this.shader.strongSmoothUniform !== null) {
-            gl.uniform1f(this.shader.strongSmoothUniform, this.useStrongSmoothing ? 1.0 : 0.0);
+        if (this.shader.smoothStrengthUniform !== null) {
+            gl.uniform1f(this.shader.smoothStrengthUniform, this.smoothStrength);
         }
         if (this.shader.textureSizeUniform !== null) {
             gl.uniform2f(this.shader.textureSizeUniform, this.textureWidth || 1, this.textureHeight || 1);

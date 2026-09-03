@@ -10,7 +10,7 @@ uniform float uHeightScale;
 uniform float uUseRelief;
 uniform float uEcho3DMode;
 uniform float uUseSmooth;
-uniform float uUseStrongSmooth;
+uniform float uSmoothStrength;
 uniform vec2 uTextureSize;
 
 
@@ -81,7 +81,7 @@ vec4 sampleVeryStrongSmooth(vec2 uv) {
 void main(void) {
     vTexCoords = aTexCoords;
 
-    vec4 strongColor = mix(sampleStrongSmooth(aTexCoords), sampleVeryStrongSmooth(aTexCoords), uUseStrongSmooth);
+    vec4 strongColor = mix(sampleStrongSmooth(aTexCoords), sampleVeryStrongSmooth(aTexCoords), uSmoothStrength);
     vec4 texColor = mix(texture2D(uSampler, aTexCoords), strongColor, uUseSmooth);
     float gray = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
 
