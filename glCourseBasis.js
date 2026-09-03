@@ -239,7 +239,7 @@ class plane {
         let size = 1.0;
         let res = this.resolution;
 
-        // 1. Création des sommets et des coordonnées UV
+        // Création des sommets et des coordonnées UV
         for (let y = 0; y <= res; y++) {
             for (let x = 0; x <= res; x++) {
                 let u = x / res;
@@ -254,7 +254,7 @@ class plane {
             }
         }
 
-        // 2. Création des indices pour relier les points en triangles
+        // Création des indices pour relier les points en triangles
         for (let y = 0; y < res; y++) {
             for (let x = 0; x < res; x++) {
                 let p1 = y * (res + 1) + x;
@@ -267,7 +267,7 @@ class plane {
             }
         }
 
-        // 3. Remplissage des buffers WebGL
+        // Remplissage des buffers WebGL
         this.vBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
