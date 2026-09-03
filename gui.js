@@ -81,6 +81,7 @@ function initGui() {
 
 	const planeCheckbox = document.getElementById('plane-checkbox');
 	const gridCheckbox = document.getElementById('grid-checkbox');
+	const grid3DEchoCheckbox = document.getElementById('grid-3d-echo');
 	const textureSelect = document.getElementById('texture-select');
 	const gridResolutionInput = document.getElementById('grid-resolution');
 	const gridResolutionValue = document.getElementById('grid-resolution-value');
@@ -100,6 +101,16 @@ function initGui() {
 			showGrid = this.checked;
 			if (PLANE) {
 				PLANE.setMeshMode(showGrid);
+			}
+		});
+	}
+
+	if (grid3DEchoCheckbox) {
+		grid3DEchoCheckbox.checked = grid3DEcho;
+		grid3DEchoCheckbox.addEventListener('change', function() {
+			grid3DEcho = this.checked;
+			if (PLANE) {
+				PLANE.setEcho3DMode(grid3DEcho);
 			}
 		});
 	}
@@ -146,6 +157,10 @@ function initGui() {
 				PLANE.updateHeightScale(value);
 			}
 		});
+	}
+
+	if (PLANE) {
+		PLANE.setEcho3DMode(grid3DEcho);
 	}
 
 	if (!window.__textureRefreshTimer) {

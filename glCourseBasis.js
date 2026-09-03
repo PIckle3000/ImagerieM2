@@ -12,8 +12,9 @@ var PLANE = null;
 
 var showPlan = true;
 var showGrid = false;
+var grid3DEcho = true;
 var gridResolution = 40;
-var textureChoice = 'echo2.png';
+var textureChoice = 'echo4.png';
 
 // =====================================================
 // OBJET 3D, lecture fichier obj
@@ -171,6 +172,7 @@ class plane {
         this.textureName = textureChoice || 'echo1.png';
         this.useRelief = !!showGrid;
         this.showMesh = !!showGrid;
+        this.echo3DMode = !!grid3DEcho;
         
         // --- Nouveaux paramètres adaptables ---
         this.resolution = gridResolution || 40;
@@ -189,6 +191,11 @@ class plane {
     // Méthode pour changer la hauteur depuis l'interface
     updateHeightScale(newHeight) {
         this.heightScale = parseFloat(newHeight);
+    }
+
+    setEcho3DMode(enabled) {
+        this.echo3DMode = !!enabled;
+        grid3DEcho = this.echo3DMode;
     }
 
     setReliefMode(enabled) {
@@ -311,12 +318,16 @@ class plane {
         this.shader.samplerUniform = gl.getUniformLocation(this.shader, "uSampler");
         this.shader.heightScaleUniform = gl.getUniformLocation(this.shader, "uHeightScale");
         this.shader.reliefUniform = gl.getUniformLocation(this.shader, "uUseRelief");
+        this.shader.echo3DUniform = gl.getUniformLocation(this.shader, "uEcho3DMode");
 
         if (this.shader.heightScaleUniform !== null) {
             gl.uniform1f(this.shader.heightScaleUniform, this.heightScale);
         }
         if (this.shader.reliefUniform !== null) {
             gl.uniform1f(this.shader.reliefUniform, this.useRelief ? 1.0 : 0.0);
+        }
+        if (this.shader.echo3DUniform !== null) {
+            gl.uniform1f(this.shader.echo3DUniform, this.echo3DMode ? 1.0 : 0.0);
         }
 
         mat4.identity(mvMatrix);
