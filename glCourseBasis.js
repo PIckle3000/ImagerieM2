@@ -1,5 +1,6 @@
 ﻿// =====================================================
 var gl;
+var supportsUint32Indices = false;
 
 // =====================================================
 var mvMatrix = mat4.create();
@@ -182,12 +183,22 @@ class plane {
         this.waveAnimation = !!gridWaveAnimation;
         this.useSmoothing = !!gridSmooth;
         this.smoothStrength = gridSmoothStrength || 0;
-        
-        // --- Nouveaux paramètres adaptables ---
         this.resolution = gridResolution || 40;
-        this.heightScale = 0.15;  // Hauteur du relief par défaut
-
+        this.heightScale = 0.15;  
+        this.zoom = 1.0;
+        this.textureOffset = textureOffset || [0.0, 0.0];
+        this.indexType = supportsUint32Indices ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
         this.initAll();
+        this.setZoom = function(zoom) {
+            this.zoom = zoom;
+        }
+        this.setTextureOffset = function(x, y) {
+            this.textureOffset[0] = Number(x) || 0.0;
+            this.textureOffset[1] = Number(y) || 0.0;
+            textureOffset[0] = this.textureOffset[0];
+            textureOffset[1] = this.textureOffset[1];
+        };
+        
     }
 
     // Méthode pour changer la résolution depuis l'interface (slider)
@@ -315,7 +326,8 @@ class plane {
 
         this.indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        const indexData = supportsUint32Indices ? new Uint32Array(indices) : new Uint16Array(indices);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
         this.indexBuffer.numItems = indices.length;
     }
 
@@ -353,7 +365,8 @@ class plane {
         this.shader.timeUniform = gl.getUniformLocation(this.shader, "uTime");
         this.shader.lightColorUniform = gl.getUniformLocation(this.shader, "uLightColor");
         this.shader.lightIntensityUniform = gl.getUniformLocation(this.shader, "uLightIntensity");
-
+        this.shader.zoomUniform = gl.getUniformLocation(this.shader, "uZoom");
+        this.shader.textureOffsetUniform = gl.getUniformLocation(this.shader, "uTextureOffset");
         if (this.shader.heightScaleUniform !== null) {
             gl.uniform1f(this.shader.heightScaleUniform, this.heightScale);
         }
@@ -384,7 +397,12 @@ class plane {
         if (this.shader.lightIntensityUniform !== null) {
             gl.uniform1f(this.shader.lightIntensityUniform, lightIntensity);
         }
-
+        if (this.shader.zoomUniform !== null) {
+            gl.uniform1f(this.shader.zoomUniform, this.zoom);
+        }
+        if (this.shader.textureOffsetUniform !== null) {
+            gl.uniform2fv(this.shader.textureOffsetUniform, new Float32Array(this.textureOffset));
+        }
         // --- CALCUL DES MATRICES ---
         mat4.identity(mvMatrix);
         mat4.translate(mvMatrix, distCENTER);
@@ -413,11 +431,11 @@ class plane {
         if (this.shader && this.loaded == 4 && this.texture && this.indexBuffer) {
             this.setShadersParams();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-            gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, this.indexType, 0);
 
             if (this.showMesh) {
                 gl.disable(gl.CULL_FACE);
-                gl.drawElements(gl.LINE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+                gl.drawElements(gl.LINE_STRIP, this.indexBuffer.numItems, this.indexType, 0);
                 gl.enable(gl.CULL_FACE);
             }
         }
@@ -543,7 +561,7 @@ class grille {
 
         this.indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
         this.indexBuffer.numItems = this.indices.length;
     }
 
@@ -588,7 +606,7 @@ class grille {
         if (this.shader && this.loaded == 4 && this.texture && this.indexBuffer) {
             this.setShadersParams();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-            gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_INT, 0);
         }
     }
 }
@@ -605,6 +623,7 @@ function initGL(canvas)
     try {
         gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         if (gl) {
+            supportsUint32Indices = !!gl.getExtension('OES_element_index_uint');
             gl.viewportWidth = canvas.width;
             gl.viewportHeight = canvas.height;
             gl.viewport(0, 0, canvas.width, canvas.height);
@@ -712,7 +731,7 @@ function webGLStart() {
     mat4.rotate(rotMatrix, rotX, [1, 0, 0]);
     mat4.rotate(rotMatrix, rotY, [0, 0, 1]);
 
-    distCENTER = vec3.create([0, -0.2, -3]);
+    distCENTER = vec3.create([0.0, -0.2, -3]);
     animationStartTime = Date.now();
 
     initGui();

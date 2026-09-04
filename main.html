@@ -34,56 +34,81 @@
 
 		<canvas id="WebGL-test" style="border:none;" width="800" height="600"></canvas>
 
-		<section id="models-section">
-			<label class="row-inline">
-				<input type="checkbox" id="plane-checkbox" checked> Afficher le plan
-			</label>
-			<label class="row-inline">
-				<input type="checkbox" id="grid-checkbox" name="grid"> Afficher le maillage
-			</label>
-			<label class="row-inline">
-				<input type="checkbox" id="grid-3d-echo" checked> Echo 3D
-			</label>
-			<label class="row-inline">
-				<input type="checkbox" id="grid-smooth"> Lisser le maillage
-			</label>
-
-			<hr>
-
-			<label class="stacked-control">
-				<span>Texture :</span>
-				<select id="texture-select"></select>
-			</label>
-
-			<hr>
-
-			<label class="stacked-control">
-				<span>Finesse du maillage :</span>
-				<div class="range-line">
-					<input id="grid-resolution" type="range" min="10" max="1300" step="10" value="500">
-					<span id="grid-resolution-value">40</span>
-				</div>
-			</label>
-			<label class="stacked-control">
-				<span>Hauteur du relief :</span>
-				<div class="range-line">
-					<input id="height-scale" type="range" min="0.02" max="0.80" step="0.01" value="0.15">
-					<span id="height-scale-value">0.15</span>
-				</div>
-			</label>
-			<label for="lightColorPicker">Couleur de la lumiere :</label>
-			<input type="color" id="lightColorPicker" value="#ffe6cc">
-			<label class="stacked-control" for="light-intensity">
-				<span>Intensite de la lumiere :</span>
-				<div class="range-line">
-					<input id="light-intensity" type="range" min="0" max="10" step="0.1" value="3">
-					<span id="light-intensity-value">1.00</span>
-				</div>
-			</label>
-		</section>
-
-	</div>
-	<!-- Fin du conteneur Flexbox -->
+	<section id="models-section">
+		<label class="row-inline">
+			<input type="checkbox" id="plane-checkbox" checked> Afficher le plan
+		</label>
+		<label class="row-inline">
+			<input type="checkbox" id="grid-checkbox" name="grid"> Afficher le maillage
+		</label>
+		<label class="row-inline">
+			<input type="checkbox" id="grid-3d-echo" checked> Echo 3D
+		</label>
+		<label class="row-inline">
+			<input type="checkbox" id="grid-smooth"> Lisser le maillage
+		</label>
+		<label class="row-inline">
+			<input type="checkbox" id="grid-wave-animation" checked> Animer la vague
+		</label>
+		<!-- <label class="stacked-control">
+			<span>Force du lissage :</span>
+			<div class="range-line">
+				<input id="grid-smooth-strength" type="range" min="0" max="1" step="0.01" value="0">
+				<span id="grid-smooth-strength-value">0.00</span>
+			</div>
+		</label> -->
+		<hr>
+		<label class="stacked-control">
+			<span>Texture :</span>
+			<select id="texture-select"></select>
+		</label>
+		<hr>
+		<label class="stacked-control">
+			<span>Finesse du maillage :</span>
+			<div class="range-line">
+				<input id="grid-resolution" type="range" min="8" max="1300" step="1" value="500">
+				<span id="grid-resolution-value">40</span>
+			</div>
+		</label>
+		<label class="stacked-control">
+			<span>Hauteur du relief :</span>
+			<div class="range-line">
+				<input id="height-scale" type="range" min="0.02" max="0.80" step="0.01" value="0.15">
+				<span id="height-scale-value">0.15</span>
+			</div>
+		</label>
+		<label for="lightColorPicker">Couleur de la lumiere :</label>
+		<input type="color" id="lightColorPicker" value="#ffe6cc">
+		<label class="stacked-control" for="light-intensity">
+			<span>Intensite de la lumiere :</span>
+			<div class="range-line">
+				<input id="light-intensity" type="range" min="0" max="10" step="0.1" value="3">
+				<span id="light-intensity-value">1.00</span>
+			</div>
+		</label>
+		<label class="stacked-control">
+			<span>Zoom de l'image :</span>
+			<div class="range-line">
+				<input id="zoom-scale" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
+				<span id="zoom-scale-value">1.0</span>
+			</div>
+		</label>
+		<label class="stacked-control">
+			<span>Deplacement X dans la mesh :</span>
+			<div class="range-line">
+				<input id="plane-position-x" type="range" min="-1" max="1" step="0.01" value="0">
+				<span id="plane-position-x-value">0.00</span>
+			</div>
+		</label>
+		<label class="stacked-control">
+			<span>Deplacement Y dans la mesh :</span>
+			<div class="range-line">
+				<input id="plane-position-y" type="range" min="-1" max="1" step="0.01" value="0">
+				<span id="plane-position-y-value">0.00</span>
+			</div>
+		</label>
+	</section>
+	
 </body>
 
 </html>

@@ -8,6 +8,8 @@ var lastMouseX = null;
 var lastMouseY = null;
 var rotY = 0;
 var rotX = -1;
+var panSpeed = 0.005;
+var textureOffset = [0.0, 0.0];
 
 // =====================================================
 window.requestAnimFrame = (function()
@@ -47,6 +49,7 @@ function handleMouseDown(event) {
 	mouseDown = true;
 	lastMouseX = event.clientX;
 	lastMouseY = event.clientY;
+	event.preventDefault();
 }
 
 
@@ -66,7 +69,13 @@ function handleMouseMove(event) {
 	var deltaX = newX - lastMouseX;
 	var deltaY = newY - lastMouseY;
 	
-	if(event.shiftKey) {
+	if (event.buttons === 2 || event.button === 2) {
+		textureOffset[0] -= deltaX * panSpeed;
+		textureOffset[1] += deltaY * panSpeed;
+		if (PLANE && typeof PLANE.setTextureOffset === 'function') {
+			PLANE.setTextureOffset(textureOffset[0], textureOffset[1]);
+		}
+	} else if(event.shiftKey) {
 		distCENTER[2] += deltaY/100.0;
 	} else {
 
@@ -78,6 +87,32 @@ function handleMouseMove(event) {
 		mat4.rotate(rotMatrix, rotY, [0, 0, 1]);
 	}
 	
-	lastMouseX = newX
+	lastMouseX = newX;
 	lastMouseY = newY;
+}
+
+function handleKeyDown(event) {
+	if (event.target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName)) {
+		return;
+	}
+
+	var distance = event.shiftKey ? 0.2 : 0.05;
+	switch (event.key) {
+		case 'ArrowLeft':
+			distCENTER[0] -= distance;
+			break;
+		case 'ArrowRight':
+			distCENTER[0] += distance;
+			break;
+		case 'ArrowUp':
+			distCENTER[1] += distance;
+			break;
+		case 'ArrowDown':
+			distCENTER[1] -= distance;
+			break;
+		default:
+			return;
+	}
+
+	event.preventDefault();
 }

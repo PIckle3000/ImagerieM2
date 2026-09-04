@@ -5,7 +5,8 @@ uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 uniform mat3 uNormalMatrix;
 uniform sampler2D uSampler;
-
+uniform float uZoom;
+uniform vec2 uTextureOffset;
 uniform float uHeightScale;
 uniform float uUseRelief;
 uniform float uEcho3DMode;
@@ -118,17 +119,25 @@ float getElevation(vec2 uv) {
 }
 
 void main(void) {
-    vTexCoords = aTexCoords;
+
+    vec2 center = vec2(0.5, 0.5);
+
+    float safeZoom = uZoom > 0.0 ? uZoom : 1.0; 
+    vec2 zoomedUV = (aTexCoords - center) / safeZoom + center + uTextureOffset;
+
+
+    vTexCoords = zoomedUV; 
 
     vec3 pos = aVertexPosition;
-    pos.z = getElevation(aTexCoords);
+    pos.z = getElevation(zoomedUV); 
 
     vec2 texel = 1.0 / max(uTextureSize, vec2(1.0));
-    float hL = getElevation(aTexCoords + vec2(-texel.x, 0.0));
-    float hR = getElevation(aTexCoords + vec2(texel.x, 0.0));
-    float hD = getElevation(aTexCoords + vec2(0.0, -texel.y));
-    float hU = getElevation(aTexCoords + vec2(0.0, texel.y));
-
+    
+    // 3. Calcul des normales avec les UV zoomées
+    float hL = getElevation(zoomedUV + vec2(-texel.x, 0.0));
+    float hR = getElevation(zoomedUV + vec2(texel.x, 0.0)); 
+    float hD = getElevation(zoomedUV + vec2(0.0, -texel.y)); 
+    float hU = getElevation(zoomedUV + vec2(0.0, texel.y)); 
     float dX = (hR - hL) / (2.0 * texel.x);
     float dY = (hU - hD) / (2.0 * texel.y);
     vec3 localNormal = normalize(vec3(-dX, -dY, 1.0));

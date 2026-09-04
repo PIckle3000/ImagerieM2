@@ -97,7 +97,68 @@ function initGui() {
 	const lightColorPicker = document.getElementById('lightColorPicker');
 	const lightIntensityInput = document.getElementById('light-intensity');
 	const lightIntensityValue = document.getElementById('light-intensity-value');
+	const zoomScaleInput = document.getElementById('zoom-scale');
+    const zoomScaleValue = document.getElementById('zoom-scale-value');
+	const planePositionXInput = document.getElementById('plane-position-x');
+	const planePositionXValue = document.getElementById('plane-position-x-value');
+	const planePositionYInput = document.getElementById('plane-position-y');
+	const planePositionYValue = document.getElementById('plane-position-y-value');
+	const textureOffsetX = textureOffset[0];
+	const textureOffsetY = textureOffset[1];
 
+	if (typeof window.zoomValue === 'undefined') {
+        window.zoomValue = 1.0;
+    }
+
+    if (zoomScaleInput) {
+        zoomScaleInput.value = String(window.zoomValue);
+        if (zoomScaleValue) {
+            zoomScaleValue.textContent = window.zoomValue.toFixed(1);
+        }
+        zoomScaleInput.addEventListener('input', function() {
+            window.zoomValue = parseFloat(this.value) || 1.0;
+            if (zoomScaleValue) {
+                zoomScaleValue.textContent = window.zoomValue.toFixed(1);
+            }
+			if (PLANE && typeof PLANE.setZoom === 'function') {
+				PLANE.setZoom(window.zoomValue);
+            }
+        });
+    }
+
+	function updatePlanePosition() {
+		if (PLANE && typeof PLANE.setTextureOffset === 'function') {
+			PLANE.setTextureOffset(textureOffset[0], textureOffset[1]);
+		}
+	}
+
+	if (planePositionXInput) {
+		planePositionXInput.value = String(textureOffsetX);
+		if (planePositionXValue) {
+			planePositionXValue.textContent = textureOffsetX.toFixed(2);
+		}
+		planePositionXInput.addEventListener('input', function() {
+			textureOffset[0] = parseFloat(this.value) || 0.0;
+			if (planePositionXValue) {
+				planePositionXValue.textContent = textureOffset[0].toFixed(2);
+			}
+			updatePlanePosition();
+		});
+	}
+
+	if (planePositionYInput) {
+		planePositionYInput.value = String(textureOffsetY);
+		if (planePositionYValue) {
+			planePositionYValue.textContent = textureOffsetY.toFixed(2);
+		}
+		planePositionYInput.addEventListener('input', function() {
+			textureOffset[1] = parseFloat(this.value) || 0.0;
+			if (planePositionYValue) {
+				planePositionYValue.textContent = textureOffset[1].toFixed(2);
+			}
+			updatePlanePosition();
+		});
+	}
 	if (planeCheckbox) {
 		planeCheckbox.checked = showPlan;
 		planeCheckbox.addEventListener('change', function() {
