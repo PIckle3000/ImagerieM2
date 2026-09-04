@@ -4,7 +4,7 @@ varying vec2 vTexCoords;
 varying vec3 vNormal;
 
 uniform sampler2D uSampler;
-uniform vec3 uLightColor; // NOUVEAU : La couleur dynamique envoyée par JS
+uniform vec3 uLightColor; // La couleur dynamique envoyée par JS
 uniform float uLightIntensity;
 
 void main(void)
@@ -20,7 +20,7 @@ void main(void)
     float diffuse = max(dot(normal, lightDir), 0.0);
     float ambient = 0.15;
     
-    // NOUVEAU : On utilise uLightColor
+    // On utilise uLightColor
     vec3 finalLight = (diffuse + ambient) * uLightColor * uLightIntensity;
 
     gl_FragColor = vec4(baseColor * finalLight, color.a);
