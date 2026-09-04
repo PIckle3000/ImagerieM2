@@ -85,6 +85,7 @@ function initGui() {
 	const planeCheckbox = document.getElementById('plane-checkbox');
 	const gridCheckbox = document.getElementById('grid-checkbox');
 	const grid3DEchoCheckbox = document.getElementById('grid-3d-echo');
+	const gridWaveAnimationCheckbox = document.getElementById('grid-wave-animation');
 	const gridSmoothCheckbox = document.getElementById('grid-smooth');
 	const gridSmoothStrengthInput = document.getElementById('grid-smooth-strength');
 	const gridSmoothStrengthValue = document.getElementById('grid-smooth-strength-value');
@@ -120,6 +121,16 @@ function initGui() {
 			grid3DEcho = this.checked;
 			if (PLANE) {
 				PLANE.setEcho3DMode(grid3DEcho);
+			}
+		});
+	}
+
+	if (gridWaveAnimationCheckbox) {
+		gridWaveAnimationCheckbox.checked = gridWaveAnimation;
+		gridWaveAnimationCheckbox.addEventListener('change', function() {
+			gridWaveAnimation = this.checked;
+			if (PLANE) {
+				PLANE.setWaveAnimation(gridWaveAnimation);
 			}
 		});
 	}
@@ -226,6 +237,7 @@ function initGui() {
 	}
 	if (PLANE) {
 		PLANE.setEcho3DMode(grid3DEcho);
+		PLANE.setWaveAnimation(gridWaveAnimation);
 		PLANE.setSmoothMode(gridSmooth);
 		PLANE.setSmoothStrength(gridSmoothStrength);
 	}

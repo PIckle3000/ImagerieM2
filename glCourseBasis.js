@@ -6,6 +6,7 @@ var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
 var rotMatrix = mat4.create();
 var distCENTER;
+var animationStartTime = Date.now();
 // =====================================================
 
 var PLANE = null;
@@ -13,6 +14,7 @@ var PLANE = null;
 var showPlan = true;
 var showGrid = true;
 var grid3DEcho = true;
+var gridWaveAnimation = false;
 var gridSmooth = false;
 var gridSmoothStrength = 0;
 var gridResolution = 80;
@@ -177,6 +179,7 @@ class plane {
         this.useRelief = !!showGrid;
         this.showMesh = !!showGrid;
         this.echo3DMode = !!grid3DEcho;
+        this.waveAnimation = !!gridWaveAnimation;
         this.useSmoothing = !!gridSmooth;
         this.smoothStrength = gridSmoothStrength || 0;
         
@@ -202,6 +205,11 @@ class plane {
     setEcho3DMode(enabled) {
         this.echo3DMode = !!enabled;
         grid3DEcho = this.echo3DMode;
+    }
+
+    setWaveAnimation(enabled) {
+        this.waveAnimation = !!enabled;
+        gridWaveAnimation = this.waveAnimation;
     }
 
     setSmoothMode(enabled) {
@@ -338,9 +346,11 @@ class plane {
         this.shader.heightScaleUniform = gl.getUniformLocation(this.shader, "uHeightScale");
         this.shader.reliefUniform = gl.getUniformLocation(this.shader, "uUseRelief");
         this.shader.echo3DUniform = gl.getUniformLocation(this.shader, "uEcho3DMode");
+        this.shader.waveAnimationUniform = gl.getUniformLocation(this.shader, "uWaveAnimation");
         this.shader.smoothUniform = gl.getUniformLocation(this.shader, "uUseSmooth");
         this.shader.smoothStrengthUniform = gl.getUniformLocation(this.shader, "uSmoothStrength");
         this.shader.textureSizeUniform = gl.getUniformLocation(this.shader, "uTextureSize");
+        this.shader.timeUniform = gl.getUniformLocation(this.shader, "uTime");
         this.shader.lightColorUniform = gl.getUniformLocation(this.shader, "uLightColor");
         this.shader.lightIntensityUniform = gl.getUniformLocation(this.shader, "uLightIntensity");
 
@@ -353,6 +363,9 @@ class plane {
         if (this.shader.echo3DUniform !== null) {
             gl.uniform1f(this.shader.echo3DUniform, this.echo3DMode ? 1.0 : 0.0);
         }
+        if (this.shader.waveAnimationUniform !== null) {
+            gl.uniform1f(this.shader.waveAnimationUniform, this.waveAnimation ? 1.0 : 0.0);
+        }
         if (this.shader.smoothUniform !== null) {
             gl.uniform1f(this.shader.smoothUniform, this.useSmoothing ? 1.0 : 0.0);
         }
@@ -361,6 +374,9 @@ class plane {
         }
         if (this.shader.textureSizeUniform !== null) {
             gl.uniform2f(this.shader.textureSizeUniform, this.textureWidth || 1, this.textureHeight || 1);
+        }
+        if (this.shader.timeUniform !== null) {
+            gl.uniform1f(this.shader.timeUniform, (Date.now() - animationStartTime) / 1000.0);
         }
         if (this.shader.lightColorUniform !== null) {
             gl.uniform3fv(this.shader.lightColorUniform, new Float32Array(lightColorRGB));
@@ -697,6 +713,7 @@ function webGLStart() {
     mat4.rotate(rotMatrix, rotY, [0, 0, 1]);
 
     distCENTER = vec3.create([0, -0.2, -3]);
+    animationStartTime = Date.now();
 
     initGui();
     PLANE = new plane();

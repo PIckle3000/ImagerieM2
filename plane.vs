@@ -9,14 +9,26 @@ uniform sampler2D uSampler;
 uniform float uHeightScale;
 uniform float uUseRelief;
 uniform float uEcho3DMode;
+uniform float uWaveAnimation;
 uniform float uUseSmooth;
 uniform float uSmoothStrength;
 uniform vec2 uTextureSize;
+uniform float uTime;
 
 varying vec2 vTexCoords;
 varying vec3 vNormal;
 
-// 1. Interpolation Bicubique Optimisée
+float cubicWeight(float x) {
+    x = abs(x);
+    if (x <= 1.0) {
+        return (1.5 * x - 2.5) * x * x + 1.0;
+    }
+    if (x < 2.0) {
+        return ((-0.5 * x + 2.5) * x - 4.0) * x + 2.0;
+    }
+    return 0.0;
+}
+
 vec4 sampleBicubicOptimized(vec2 uv) {
     vec2 texSize = max(uTextureSize, vec2(1.0));
     vec2 invTexSize = 1.0 / texSize;
@@ -24,7 +36,6 @@ vec4 sampleBicubicOptimized(vec2 uv) {
     vec2 ixy = floor(st);
     vec2 fxy = fract(st);
 
-    // Poids de Catmull-Rom optimisés
     vec4 wX = vec4(
         -0.5 * fxy.x * fxy.x * fxy.x + fxy.x * fxy.x - 0.5 * fxy.x,
          1.5 * fxy.x * fxy.x * fxy.x - 2.5 * fxy.x * fxy.x + 1.0,
@@ -40,7 +51,6 @@ vec4 sampleBicubicOptimized(vec2 uv) {
 
     vec2 gX = vec2(wX.x + wX.y, wX.z + wX.w);
     vec2 gY = vec2(wY.x + wY.y, wY.z + wY.w);
-    
     vec2 hX = vec2((wX.y / (gX.x + 0.0001)) - 1.0, (wX.w / (gX.y + 0.0001)) + 1.0);
     vec2 hY = vec2((wY.y / (gY.x + 0.0001)) - 1.0, (wY.w / (gY.y + 0.0001)) + 1.0);
 
@@ -53,15 +63,11 @@ vec4 sampleBicubicOptimized(vec2 uv) {
            gY.y * (gX.x * texture2D(uSampler, p2) + gX.y * texture2D(uSampler, p3));
 }
 
-// 2. un flou Gaussien adaptatif 9-taps
 vec4 sampleSmartSmooth(vec2 uv) {
     vec2 texel = 1.0 / max(uTextureSize, vec2(1.0));
-    // Rayon dynamique : 1.0 = Strong, 2.0 = Very Strong
-    // float radius = mix(1.0, 6.0, uSmoothStrength); 
-    float radius = 6.0;
+    float radius = mix(4.0, 8.0, clamp(uSmoothStrength, 0.0, 1.0));
     vec2 off = texel * radius;
 
-    // Un flou large casse déjà les pixels, une lecture bilinéaire (texture2D) suffit ici !
     vec4 color = texture2D(uSampler, uv) * 0.25;
     color += texture2D(uSampler, uv + vec2(-off.x, 0.0)) * 0.125;
     color += texture2D(uSampler, uv + vec2(off.x, 0.0)) * 0.125;
@@ -71,57 +77,61 @@ vec4 sampleSmartSmooth(vec2 uv) {
     color += texture2D(uSampler, uv + vec2(off.x, -off.y)) * 0.0625;
     color += texture2D(uSampler, uv + vec2(-off.x, off.y)) * 0.0625;
     color += texture2D(uSampler, uv + vec2(off.x, off.y)) * 0.0625;
-
     return color;
 }
 
-// 3. Fonction de hauteur conditionnelle
+float hash12(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+}
+
+float phasorNoise(vec2 uv, float timeValue) {
+    vec2 p = uv * 10.0;
+    vec2 cell = floor(p);
+    vec2 f = fract(p);
+
+    float a = hash12(cell);
+    float b = hash12(cell + vec2(1.0, 0.0));
+    float c = hash12(cell + vec2(0.0, 1.0));
+    float d = hash12(cell + vec2(1.0, 1.0));
+
+    vec2 smoothF = f * f * (3.0 - 2.0 * f);
+    float phase = mix(mix(a, b, smoothF.x), mix(c, d, smoothF.x), smoothF.y) * 6.2831853;
+
+    float waveA = sin(timeValue * 2.2 + phase + dot(uv, vec2(14.0, 7.0)));
+    float waveB = sin(timeValue * 1.4 + phase * 1.3 + dot(uv, vec2(-9.0, 11.0)));
+    return (waveA + 0.6 * waveB) * 0.625;
+}
+
 float getElevation(vec2 uv) {
     vec4 texColor;
-    
-    // uUseSmooth
     if (uUseSmooth > 0.5) {
-        // Checkbox cochée : Lissage extrême direct
-        texColor = sampleSmartSmooth(uv); 
+        texColor = mix(sampleBicubicOptimized(uv), sampleSmartSmooth(uv), clamp(uSmoothStrength, 0.0, 1.0));
     } else {
-        // Checkbox décochée : Rendu détaillé normal
-        texColor = sampleBicubicOptimized(uv); 
+        texColor = texture2D(uSampler, uv);
     }
 
     float gray = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
     float reliefValue = mix(1.0 - gray, gray, uEcho3DMode);
-    return mix(0.1, 0.1 + (reliefValue * uHeightScale), uUseRelief);
-}
-
-// 4. Fonction ultra-rapide pour les normales (inchangée, parfaite pour sa tâche)
-float getFastElevation(vec2 uv) {
-    vec4 texColor = texture2D(uSampler, uv);
-    float gray = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
-    float reliefValue = mix(1.0 - gray, gray, uEcho3DMode);
-    return mix(0.1, 0.1 + (reliefValue * uHeightScale), uUseRelief);
+    float baseHeight = mix(0.1, 0.1 + (reliefValue * uHeightScale), uUseRelief);
+    float wave = phasorNoise(uv, uTime) * (0.045 + uHeightScale * 0.18) * uUseRelief * uWaveAnimation;
+    return baseHeight + wave;
 }
 
 void main(void) {
     vTexCoords = aTexCoords;
 
-    // A. Calcul de la hauteur lissée
-    float z = getElevation(aTexCoords);
     vec3 pos = aVertexPosition;
-    pos.z = z;
+    pos.z = getElevation(aTexCoords);
 
-    // B. Calcul des normales par différences finies
     vec2 texel = 1.0 / max(uTextureSize, vec2(1.0));
-    
-    float hL = getFastElevation(aTexCoords + vec2(-texel.x, 0.0));
-    float hR = getFastElevation(aTexCoords + vec2(texel.x, 0.0));
-    float hD = getFastElevation(aTexCoords + vec2(0.0, -texel.y));
-    float hU = getFastElevation(aTexCoords + vec2(0.0, texel.y));
+    float hL = getElevation(aTexCoords + vec2(-texel.x, 0.0));
+    float hR = getElevation(aTexCoords + vec2(texel.x, 0.0));
+    float hD = getElevation(aTexCoords + vec2(0.0, -texel.y));
+    float hU = getElevation(aTexCoords + vec2(0.0, texel.y));
 
     float dX = (hR - hL) / (2.0 * texel.x);
     float dY = (hU - hD) / (2.0 * texel.y);
-
-    float normalStrength = 0.5; 
-    vec3 localNormal = normalize(vec3(-dX * normalStrength, -dY * normalStrength, 1.0));
+    vec3 localNormal = normalize(vec3(-dX, -dY, 1.0));
 
     vNormal = uNormalMatrix * localNormal;
     gl_Position = uPMatrix * uMVMatrix * vec4(pos, 1.0);
