@@ -17,7 +17,7 @@ var showGrid = true;
 var grid3DEcho = true;
 var gridWaveAnimation = false;
 var gridSmooth = false;
-var gridSmoothStrength = 0;
+var gridSmoothStrength = 6;
 var gridResolution = 80;
 var textureChoice = 'echo4.png';
 
