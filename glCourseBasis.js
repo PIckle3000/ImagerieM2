@@ -317,8 +317,7 @@ class plane {
         this.setTexture(this.textureName);
         loadShaders(this);
     }
-
-    setShadersParams() {
+	setShadersParams() {
         gl.useProgram(this.shader);
 
         this.shader.vAttrib = gl.getAttribLocation(this.shader, "aVertexPosition");
@@ -331,6 +330,8 @@ class plane {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
         gl.vertexAttribPointer(this.shader.tAttrib, this.tBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
+        this.shader.nMatrixUniform = gl.getUniformLocation(this.shader, "uNormalMatrix");
+
         this.shader.pMatrixUniform = gl.getUniformLocation(this.shader, "uPMatrix");
         this.shader.mvMatrixUniform = gl.getUniformLocation(this.shader, "uMVMatrix");
         this.shader.samplerUniform = gl.getUniformLocation(this.shader, "uSampler");
@@ -340,6 +341,8 @@ class plane {
         this.shader.smoothUniform = gl.getUniformLocation(this.shader, "uUseSmooth");
         this.shader.smoothStrengthUniform = gl.getUniformLocation(this.shader, "uSmoothStrength");
         this.shader.textureSizeUniform = gl.getUniformLocation(this.shader, "uTextureSize");
+        this.shader.lightColorUniform = gl.getUniformLocation(this.shader, "uLightColor");
+        this.shader.lightIntensityUniform = gl.getUniformLocation(this.shader, "uLightIntensity");
 
         if (this.shader.heightScaleUniform !== null) {
             gl.uniform1f(this.shader.heightScaleUniform, this.heightScale);
@@ -359,13 +362,29 @@ class plane {
         if (this.shader.textureSizeUniform !== null) {
             gl.uniform2f(this.shader.textureSizeUniform, this.textureWidth || 1, this.textureHeight || 1);
         }
+        if (this.shader.lightColorUniform !== null) {
+            gl.uniform3fv(this.shader.lightColorUniform, new Float32Array(lightColorRGB));
+        }
+        if (this.shader.lightIntensityUniform !== null) {
+            gl.uniform1f(this.shader.lightIntensityUniform, lightIntensity);
+        }
 
+        // --- CALCUL DES MATRICES ---
         mat4.identity(mvMatrix);
         mat4.translate(mvMatrix, distCENTER);
         mat4.multiply(mvMatrix, rotMatrix);
 
+        var normalMatrix = mat3.create();
+        mat4.toInverseMat3(mvMatrix, normalMatrix);
+        mat3.transpose(normalMatrix);
+
         gl.uniformMatrix4fv(this.shader.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(this.shader.mvMatrixUniform, false, mvMatrix);
+        
+
+        if (this.shader.nMatrixUniform !== null) {
+            gl.uniformMatrix3fv(this.shader.nMatrixUniform, false, normalMatrix);
+        }
 
         if (this.texture) {
             gl.activeTexture(gl.TEXTURE0);

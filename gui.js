@@ -1,3 +1,6 @@
+var lightColorRGB = [1.0, 0.90, 0.80];
+var lightIntensity = 1.0;
+
 function getTextureList() {
 	const fallback = Array.from(new Set([
 		'echo1.png',
@@ -90,6 +93,9 @@ function initGui() {
 	const gridResolutionValue = document.getElementById('grid-resolution-value');
 	const heightScaleInput = document.getElementById('height-scale');
 	const heightScaleValue = document.getElementById('height-scale-value');
+	const lightColorPicker = document.getElementById('lightColorPicker');
+	const lightIntensityInput = document.getElementById('light-intensity');
+	const lightIntensityValue = document.getElementById('light-intensity-value');
 
 	if (planeCheckbox) {
 		planeCheckbox.checked = showPlan;
@@ -187,7 +193,37 @@ function initGui() {
 			}
 		});
 	}
+	if (lightColorPicker) {
+        let hex = lightColorPicker.value;
+        if (hex) {
+            let r = parseInt(hex.substring(1, 3), 16) / 255.0;
+            let g = parseInt(hex.substring(3, 5), 16) / 255.0;
+            let b = parseInt(hex.substring(5, 7), 16) / 255.0;
+            lightColorRGB = [r, g, b];
+        }
 
+
+        lightColorPicker.addEventListener('input', function(event) {
+            let hexValue = event.target.value;
+            let r = parseInt(hexValue.substring(1, 3), 16) / 255.0;
+            let g = parseInt(hexValue.substring(3, 5), 16) / 255.0;
+            let b = parseInt(hexValue.substring(5, 7), 16) / 255.0;
+            
+            lightColorRGB = [r, g, b];
+        });
+    }
+	if (lightIntensityInput) {
+		lightIntensityInput.value = String(lightIntensity);
+		if (lightIntensityValue) {
+			lightIntensityValue.textContent = lightIntensity.toFixed(2);
+		}
+		lightIntensityInput.addEventListener('input', function() {
+			lightIntensity = parseFloat(this.value) || 0;
+			if (lightIntensityValue) {
+				lightIntensityValue.textContent = lightIntensity.toFixed(2);
+			}
+		});
+	}
 	if (PLANE) {
 		PLANE.setEcho3DMode(grid3DEcho);
 		PLANE.setSmoothMode(gridSmooth);
